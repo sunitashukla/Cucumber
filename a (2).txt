@@ -1,0 +1,142 @@
+using Dsf.Rss.MemberDetails.Service.Messages.v1;
+using Dsf.TestFramework.ServiceTests;
+using Dsf.TestFramework.ServiceTests.Core;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using TechTalk.SpecFlow;
+using Dsf.Rss.MemberDetails.Service.Messages.v1.Models;
+using TechTalk.SpecFlow.Assist;
+using Dsf.Rss.MemberDetails.ServiceTests.Setup.DataAccess.Validator;
+
+namespace Dsf.Rss.MemberDetails.ServiceTests.Steps.v1
+{
+    [Binding, Scope(Feature = "UpdateMemberContact v1")]
+    public sealed class UpdateMemberContactDetailsSteps
+        : GetResponseSteps<UpdateMemberContactDetails, UpdateMemberContactDetailsReply>
+    {
+       // UpdateMemberContactDetailsValidator cal = new UpdateMemberContactDetailsValidator();
+
+        [Given(@"the request includes ContactDetail")]
+        public void GivenTheRequestIncludesAdditionalDataFields(Table table)
+        {/*
+            IEnumerable<ContactDetail> tableData = table.CreateSet<ContactDetail>();
+            List<ContactDetail> MemberContactList = new List<ContactDetail>();
+            foreach (var Info in tableData)
+            {
+                ContactDetail MemberContact = new ContactDetail();
+                MemberContact.PhoneNumber = Info.PhoneNumber;
+                MemberContact.MobileNumber = Info.MobileNumber;
+
+                MemberContactList.Add(MemberContact);
+            }
+            Request = MemberContactList;*/
+        }
+
+        [Then(@"Verify the success response")]
+        public void ThenVerifyTheSuccessResponse()
+        {
+            var value1 = JsonConvert.SerializeObject(Request);
+            var value2 = JsonConvert.SerializeObject(Response);
+            var request = JsonConvert.DeserializeObject(value1);
+            var response = JsonConvert.DeserializeObject(value2);
+            new Hooks(request, response);
+            Assert.IsTrue(Response.IsSuccess);
+          //  cal.CompareResponse(Request, Response);
+        }
+
+        [Then(@"Verify error code ""(.*)"" and error message ""(.*)""")]
+        public void ThenVerifyErrorCodeAndErrorMessage(string p0, string p1)
+        {
+            var value1 = JsonConvert.SerializeObject(Request);
+            var value2 = JsonConvert.SerializeObject(Response);
+            var request = JsonConvert.DeserializeObject(value1);
+            var response = JsonConvert.DeserializeObject(value2);
+            new Hooks(request, response);
+            Assert.IsFalse(Response.IsSuccess);
+            Assert.AreEqual(p0, Response.Errors.ToArray()[0].Code);
+            Assert.AreEqual(p1, Response.Errors.ToArray()[0].Description);
+        }
+
+
+
+        [Given(@"the request includes ResidentialAddress")]
+        public void GivenTheRequestIncludesResidentialAddress(Table table)
+        {
+
+            IEnumerable<ResidentialAddress> tableData = table.CreateSet<ResidentialAddress>();
+           // List<ResidentialAddress> ResidentialList = new List<ResidentialAddress>();
+           foreach (var Info in tableData)
+           {
+                ResidentialAddress Residential = new ResidentialAddress();
+                Residential.AddressLine1 = Info.AddressLine1;
+                Residential.AddressLine2 = Info.AddressLine2;
+                Residential.Suburb = Info.Suburb;
+                Residential.State = Info.State;
+                Residential.PostCode = Info.PostCode;
+                Residential.CountryCode = Info.CountryCode;
+                Request.ResidentialAddress = Residential;
+                //  ResidentialList.Add(Residential);
+            }
+                 
+
+        }
+
+        [Given(@"the request includes PostalAddress")]
+        public void GivenTheRequestIncludesPostalAddress(Table table)
+        {
+
+            IEnumerable<PostalAddress> tableData = table.CreateSet<PostalAddress>();
+            foreach( var info in tableData)
+            {
+                PostalAddress postal = new PostalAddress();
+                postal.AddressLine1 = info.AddressLine1;
+                postal.AddressLine2 = info.AddressLine2;
+                postal.Suburb = info.Suburb;
+                postal.State = info.State;
+                postal.PostCode = info.PostCode;
+                postal.CountryCode = info.CountryCode;
+
+                Request.PostalAddress = postal;
+            }
+
+        }
+    }
+}
+
+========
+
+
+Feature: UpdateMemberContact v1
+	In order to...
+	As a service user
+	I want to...
+
+Background:
+	Given I use service message v1
+
+Scenario: Smoke test
+	Given the request is
+		| Request      | Value |
+		| PlanCode     | RS    |
+		| PlanMemberId |       |
+		| memberContactDetailsId | dae64d7b-7016-4d99-a4d0-3021ba16d084 |
+		| FirstName              |     Aldrik                                 |
+		| MiddleName             |                                   |
+		| LastName               |         Scott                             |
+		| Dob                    | 1968-09-03                                     |
+	And the request includes ResidentialAddress
+	| MembersAddressType | AddressLine1        | AddressLine2 | Suburb  | State | PostCode | CountryCode |
+	| Postal             | 29 Barnesdale Drive |              | VERMONT | VIC   | 3133     | *AU         |
+
+	And the request includes PostalAddress
+	| MembersAddressType | AddressLine1        | AddressLine2 | Suburb  | State | PostCode | CountryCode |
+	| Postal             | 29 Barnesdale Drive |              | VERMONT | VIC   | 3133     | *AU         |
+
+	When I send the request
+	Then there is a response
+	And the response is
+		| check the response | Value |
+		| isSuccess          | true  |
+	Then Verify the success response
